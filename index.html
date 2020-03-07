@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <title>Arbre geneologic</title>
+		
+    </head>
+	
+	<style type="text/css">
+		body {
+			font-family: verdana;
+			font-size: 12px;
+		}
+		
+		.familia {
+			border: 0px solid #00FFFF;
+			display: flex;
+			flex-direction: row-reverse;
+			
+		}
+		
+		.generacio {
+			border: 0px solid #FF0000;
+			margin-left: 5px;
+			max-height: 100%;
+			display: inline-block;
+			display:flex;
+			flex-direction: column;
+			justify-content: space-around;
+			
+		}
+		
+		.persona {
+			border: 1px solid #000000;
+			margin: 5px;
+			padding: 2px;
+		}
+		
+		.anonim {
+			border: 0px;
+			margin: 5px;
+			padding 2px;
+		}
+
+	</style>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+	
+	<script>	
+	
+	/** CLASE PERSONA **/
+	class Persona {
+		constructor() {
+			this.links = []
+		}
+		
+	}
+	/**FI CLASE  **/
+	
+	$(document).ready(function(){
+	
+		$.getJSON( "./arbrejson.json", function( data ) {
+			$.each( data, function( key, persona ) {
+				pers = new Persona();
+				$.each ( persona, function ( data, valor ) {
+					//console.log("EACH: " + data + " - " +valor);
+					switch(data) {
+						case "id": pers.id = valor; break;
+						case "nom": pers.nom = valor; break;
+						case "naixement": pers.naixement = valor; break;
+						case "traspas": pers.traspas = valor; break;
+						case "links":
+							$.each (valor, function(tipo, link) {
+								pers.links[tipo] = link; 
+							});
+						break
+					}
+				});
+				montaArbre(pers);
+			});
+		})
+		/** FI CONVERSIO **/
+	
+	});
+	
+	function montaArbre(p) {
+		if (p.id<0) {
+			$("div[generacio=n]")
+				.append("<div class='persona'><b>"+p.nom+"</b><br>"+p.naixement+"</div>");
+		} else {
+		var id = parseInt(p.id)+1;
+			var pot = Math.trunc(Math.log(id) / Math.log(2));
+			if (Math.pow(2,pot)-1 == p.id) {
+				console.log("CREO GENERACIO: "+pot);
+				$("#familia").append("<div id='g"+pot+"' class='generacio' generacio='"+pot+"'></div>");
+			}
+			var txtapp = "";
+			if (p.nom.length > 0) {
+				txtapp = "<div class='persona'><b>"+p.nom+"</b><br>"+p.naixement;
+				txtapp += p.traspas.length > 0 ? "<br>"+p.traspas : "";
+			} else {
+				txtapp = "<div class='anonim'>&nbsp<br>&nbsp<br>&nbsp";
+			}
+			
+			txtapp += "</div>";
+			console.log(txtapp);
+			
+			$("div[generacio="+pot+"]").append(txtapp);
+		}
+	}
+	
+	</script>
+	<div class="familia" id="familia">
+		<div id="gn" class="generacio" generacio="n">
+			
+		</div>
+	</div>
+	
+    <body>
+    </body>
+</html>
+
